@@ -1,0 +1,56 @@
+body {
+    background-color: #f4f7f6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#wrapper {
+    overflow-x: hidden;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 250px;
+}
+
+.list-group-item {
+    border: none;
+    transition: 0.3s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa !important;
+    padding-left: 1.5rem !important;
+}
+
+.list-group-item.active {
+    border-right: 5px solid #0d6efd;
+    background-color: #f0f6ff !important;
+    color: #0d6efd !important;
+    font-weight: bold;
+}
+
+.border-5 {
+    border-left-width: 8px !important;
+}
+
+/* Efek berkedip saat bahaya */
+.danger-pulse {
+    animation: pulse-red 1s infinite;
+    background-color: #fff5f5 !important;
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}body { background-color: #f8f9fc; overflow-x: hidden; }
+#sidebar-wrapper { min-height: 100vh; width: 250px; }
+.list-group-item { padding: 1rem 1.5rem; transition: 0.2s; }
+.list-group-item.active { background-color: rgba(255,255,255,0.2) !important; font-weight: bold; border-right: 5px solid white !important; }
+.border-5 { border-left-width: 8px !important; }
+
+/* Responsive untuk HP */
+@media (max-width: 768px) {
+    #sidebar-wrapper { margin-left: -250px; }
+    #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+}
