@@ -1,73 +1,98 @@
-// Konfigurasi Chart
+// 1. Inisialisasi Grafik Ganda (Suhu & Gas)
 const ctx = document.getElementById('gasChart').getContext('2d');
-let gasData = [100, 120, 115, 130, 125, 140, 135, 150, 145, 160];
+let gasData = [120, 130, 125, 140, 150, 160, 155, 170, 165, 180];
+let tempData = [25, 26, 25, 27, 28, 27, 26, 28, 29, 28];
 let labels = ['', '', '', '', '', '', '', '', '', ''];
 
 const chart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: labels,
-        datasets: [{
-            label: 'Konsentrasi Gas (PPM)',
-            data: gasData,
-            borderColor: '#ffc107',
-            backgroundColor: 'rgba(255, 193, 7, 0.1)',
-            fill: true,
-            tension: 0.4
-        }]
+        datasets: [
+            {
+                label: 'Gas (PPM)',
+                data: gasData,
+                borderColor: '#f6c23e', // Kuning (Gas)
+                backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                yAxisID: 'yGas',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Suhu (°C)',
+                data: tempData,
+                borderColor: '#4e73df', // Biru (Suhu)
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                yAxisID: 'yTemp',
+                tension: 0.4
+            }
+        ]
     },
     options: {
         responsive: true,
-        scales: { y: { beginAtZero: true, max: 1000 } }
+        scales: {
+            yGas: { type: 'linear', position: 'left', beginAtZero: true, max: 1000, title: { display: true, text: 'PPM' } },
+            yTemp: { type: 'linear', position: 'right', beginAtZero: true, max: 100, grid: { drawOnChartArea: false }, title: { display: true, text: '°C' } }
+        }
     }
 });
 
-// Fungsi Simulasi Update Data
+// 2. Variabel Kontrol
+let isManualBuzzer = false;
+
+// 3. Fungsi Simulasi Update Data & Logika Otomatis
 function updateSensorData() {
-    // Simulasi Nilai
+    // Simulasi Nilai dari MQ5 dan Sensor Suhu
     const newGas = Math.floor(Math.random() * 500) + 50; 
-    const newTemp = Math.floor(Math.random() * 5) + 25;
+    const newTemp = Math.floor(Math.random() * 15) + 20;
 
     document.getElementById('gas-val').innerText = newGas + " PPM";
     document.getElementById('temp-val').innerText = newTemp + "°C";
 
+    // Logika Otomatis Buzzer
+    // Menyala jika Gas > 400 ATAU Suhu > 35
+    if (newGas > 400 || newTemp > 35) {
+        setBuzzerUI(true, "OTOMATIS (BAHAYA)");
+    } else if (!isManualBuzzer) {
+        setBuzzerUI(false, "AMAN");
+    }
+
     // Update Grafik
     gasData.push(newGas);
+    tempData.push(newTemp);
     gasData.shift();
+    tempData.shift();
     chart.update();
+}
 
-    // Logika Keamanan
-    const statusCard = document.getElementById('status-card');
-    const statusText = document.getElementById('status-text');
-    const gasCard = document.getElementById('gas-card');
-
-    if (newGas > 400) {
-        statusText.innerText = "BAHAYA!";
-        statusCard.className = "card p-3 border-start border-danger border-5 shadow-sm danger-pulse";
-        gasCard.classList.add("text-danger");
-        document.getElementById('buzzer-status-text').innerText = "BERBUNYI!";
-        document.getElementById('btn-buzzer').className = "btn btn-lg btn-danger w-100 py-3";
+// 4. Fungsi Kendali Manual
+function manualBuzzerControl() {
+    const sw = document.getElementById('buzzerSwitch');
+    isManualBuzzer = sw.checked;
+    
+    if (isManualBuzzer) {
+        setBuzzerUI(true, "MANUAL (ON)");
     } else {
-        statusText.innerText = "AMAN";
-        statusCard.className = "card p-3 border-start border-success border-5 shadow-sm";
-        gasCard.classList.remove("text-danger");
+        setBuzzerUI(false, "SIAGA");
     }
 }
 
-// Fungsi Tombol Buzzer
-let buzzerOn = false;
-function toggleBuzzer() {
-    buzzerOn = !buzzerOn;
-    const btn = document.getElementById('btn-buzzer');
-    const label = document.getElementById('buzzer-label');
+// 5. Fungsi Update Tampilan Buzzer
+function setBuzzerUI(isActive, message) {
+    const label = document.getElementById('buzzerStatusLabel');
+    const statusCard = document.getElementById('status-card');
+    const statusText = document.getElementById('status-text');
 
-    if (buzzerOn) {
-        btn.className = "btn btn-lg btn-danger w-100 py-3";
-        label.innerText = "MATIKAN";
-        alert("Buzzer Dinyalakan secara Manual!");
+    if (isActive) {
+        label.innerText = "AKTIF - " + message;
+        label.className = "badge bg-danger p-2 px-3";
+        statusText.innerText = "ALARM AKTIF!";
+        statusCard.className = "card p-3 border-start border-danger border-5 shadow-sm danger-pulse";
     } else {
-        btn.className = "btn btn-lg btn-outline-secondary w-100 py-3";
-        label.innerText = "BUNYIKAN";
+        label.innerText = "MATI";
+        label.className = "badge bg-secondary p-2 px-3";
+        statusText.innerText = "AMAN";
+        statusCard.className = "card p-3 border-start border-success border-5 shadow-sm";
     }
 }
 
